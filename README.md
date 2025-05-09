@@ -5,10 +5,8 @@
 ![20250509-170324](https://github.com/user-attachments/assets/9e60f106-6a08-49f5-ab97-20d922dedf7f)
 
 
-
 ## 系统概述
 
-本系统能够:
 - 监控多条区块链上的虚拟货币交易和市场数据
 - 分析大额交易、持仓集中度和市场深度等指标
 - 使用机器学习模型（LSTM、随机森林、XGBoost）预测主力资金入场
@@ -48,31 +46,63 @@ pip install -r requirements.txt
 
 ```yaml
 api_keys:
-  etherscan: "YOUR_ETHERSCAN_API_KEY"
-  telegram: "YOUR_TELEGRAM_API_KEY"
-  feishu: "YOUR_FEISHU_API_KEY"
-  wechat: "YOUR_WECHAT_API_KEY"
-  web3: "YOUR_WEB3_API_KEY"
-  ccxt: "YOUR_CCXT_API_KEY"
-  covalent: "YOUR_COVALENT_API_KEY"
-  dexscreener: "YOUR_DEXSCREENER_API_KEY"
-  arkham: "YOUR_ARKHAM_API_KEY"
-  glassnode: "YOUR_GLASSNODE_API_KEY"
-  nansen: "YOUR_NANSEN_API_KEY"
+  etherscan: "YOUR_ETHERSCAN_API_KEY"  # 以太坊区块链浏览器API
+  web3: "YOUR_WEB3_API_KEY"  # 如Infura或Alchemy的API密钥
+  ccxt: "YOUR_CCXT_API_KEY"  # 交易所API密钥（如需要）
+  covalent: "YOUR_COVALENT_API_KEY"  # Covalent区块链数据API
+  dexscreener: "YOUR_DEXSCREENER_API_KEY"  # DEX数据API
+  arkham: "YOUR_ARKHAM_API_KEY"  # Arkham情报API（如需要）
 
-# 监控的区块链网络
-blockchain_networks:
-  - ethereum
-  - solana
-  - binance_smart_chain
-  - polygon
+  # 通知相关API密钥
+  telegram: "YOUR_TELEGRAM_API_KEY"  # Telegram Bot API密钥
+  feishu: "YOUR_FEISHU_API_KEY"  # 飞书API密钥
+  wechat: "YOUR_WECHAT_API_KEY"  # 微信API密钥
 
 # 监控的虚拟货币列表
 crypto_list:
   - BTC
   - ETH
   - SOL
-  - DORA
+  # 可添加更多...
+```
+
+> 注意：您可以根据需要注释掉不需要使用的API密钥。系统会根据可用的API密钥自动选择数据源。
+
+### 通知配置
+
+系统支持多种通知渠道，可在`config/config.yaml`中配置:
+
+```yaml
+# 通知配置
+notification:
+  enabled: true  # 是否启用通知
+  channels:
+    - "feishu"  # 可选: "feishu", "wechat", "telegram"
+  webhook_urls:
+    feishu: "https://open.feishu.cn/open-apis/bot/v2/hook/YOUR_FEISHU_WEBHOOK"
+    wechat: "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_WECHAT_WEBHOOK"
+    telegram:
+      bot_token: "YOUR_TELEGRAM_BOT_TOKEN"
+      chat_id: "YOUR_TELEGRAM_CHAT_ID"
+```
+
+### 代理设置
+
+如果您需要使用代理访问API，可以配置代理设置:
+
+```yaml
+# 代理设置
+proxy:
+  enabled: false  # 是否启用代理
+  type: "http"    # 代理类型：http, https, socks5
+  host: "127.0.0.1"  # 代理服务器地址
+  port: 7890      # 代理服务器端口
+  username: ""    # 代理认证用户名（如果需要）
+  password: ""    # 代理认证密码（如果需要）
+  # 不使用代理的域名列表
+  no_proxy:
+    - "localhost"
+    - "127.0.0.1"
 ```
 
 ### 环境变量配置
@@ -134,37 +164,6 @@ API服务将在 http://localhost:8000 启动，可通过 http://localhost:8000/d
    - 速率限制
    - API密钥加密存储
 
-## 目录结构
-
-```
-.
-├── main.py                      # 主程序入口
-├── config/                      # 配置文件目录
-│   ├── config.yaml              # 参数配置（API Key、地址池等）
-│   └── api_keys.json            # API密钥存储文件
-├── data/
-│   ├── fetch_chain.py           # 链上数据采集
-│   ├── fetch_market.py          # 行情数据采集
-│   ├── multi_chain_provider.py  # 多链数据提供商
-│   └── advanced_data_provider.py # 高级数据提供商
-├── analysis/
-│   ├── rule_engine.py           # 主力判断逻辑
-│   ├── feature_engine.py        # 特征提取与数据分析
-│   ├── ml_models.py             # 机器学习模型
-│   ├── feature_engineering.py   # 高级特征工程
-│   └── prediction_service.py    # 预测服务
-├── notify/
-│   ├── telegram.py              # Telegram Webhook
-│   ├── feishu.py                # 飞书 Webhook
-│   └── wechat.py                # 微信推送模块
-├── api/
-│   └── app.py                   # API服务
-├── security/
-│   └── api_security.py          # API安全模块
-└── utils/
-    └── logger.py                # 日志与辅助模块
-```
-
 ## 机器学习模型
 
 系统集成了多种机器学习模型，用于预测主力资金入场:
@@ -212,11 +211,67 @@ crypto_contracts:
   # 其他加密货币...
   NEW_COIN:
     ethereum: "0x合约地址..."  # 以太坊上的合约地址
-    chain: "ethereum"  # 主链名称
+    chain: "ethereum"  # 主链名称，如ethereum, binance, tron等
 ```
 
-3. 如果该加密货币没有以太坊上的合约地址，您可以:
-   - 使用其他链上的合约地址（需要实现多链支持）
-   - 仅监控市场数据（通过CCXT库）
+3. 对于没有以太坊合约地址的加密货币，可以使用占位符并指定其主链:
 
-注意: 系统目前主要支持以太坊链上的代币。对于没有以太坊合约的原生代币（如BTC），系统使用其包装代币（如wBTC）的合约地址。
+```yaml
+NEW_NATIVE_COIN:
+  ethereum: "0x1b1a3c7f1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a"  # 占位符
+  chain: "native_chain_name"  # 例如：bitcoin, cardano, ripple等
+```
+
+系统当前支持多种加密货币，包括:
+- 以太坊代币 (ETH, SHIB, PEPE等)
+- 比特币及其分叉 (BTC, BCH, BSV)
+- 其他主流公链代币 (SOL, BNB, ADA, XRP, TRX等)
+- 热门代币 (DOGE, ORDI, SUI, OP等)
+
+注意: 
+- 对于没有以太坊合约的原生代币（如BTC），系统使用其包装代币（如wBTC）的合约地址进行链上数据监控
+- 对于某些链，系统可能仅支持市场数据监控，而不支持完整的链上数据分析
+- 添加新代币时，请确保在相应的数据提供商中也有该代币的支持
+
+## 代理配置与诊断
+
+系统支持通过代理访问各种API，特别适合在网络受限环境中使用。
+
+### 代理配置
+
+在`config/config.yaml`文件中配置代理设置:
+
+```yaml
+# 代理设置
+proxy:
+  enabled: true  # 设置为false可禁用代理
+  type: "http"    # 代理类型：http, https, socks5
+  host: "127.0.0.1"  # 代理服务器地址
+  port: 7890      # 代理服务器端口
+  username: ""    # 代理认证用户名（如果需要）
+  password: ""    # 代理认证密码（如果需要）
+  # 不使用代理的域名列表
+  no_proxy:
+    - "localhost"
+    - "127.0.0.1"
+```
+
+### 代理诊断
+
+系统启动时会自动检测代理连接状态，并在日志中输出诊断信息。如果遇到API连接问题，请检查:
+
+1. 代理服务器是否正常运行
+2. 代理配置是否正确
+3. 日志中是否有代理连接错误信息
+
+如果代理连接测试失败，系统会在日志中提示您检查代理配置或考虑禁用代理。
+
+### 常见问题排查
+
+如果遇到数据获取失败的情况:
+
+1. 检查日志文件中的错误信息
+2. 验证API密钥是否有效
+3. 尝试禁用代理后重新运行系统
+4. 确认目标API服务是否可用
+5. 检查网络连接状态
