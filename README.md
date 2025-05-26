@@ -2,7 +2,8 @@
 
 这是一个基于Python的虚拟货币主力资金入场检测系统，可以自动监控虚拟货币市场，检测主力资金入场信号，并通过多种渠道（飞书、Telegram、微信）推送通知。系统集成了高级机器学习模型和强化安全机制。
 
-![20250509-170324](https://github.com/user-attachments/assets/9e60f106-6a08-49f5-ab97-20d922dedf7f)
+![image](https://github.com/user-attachments/assets/d8873bc1-ea60-4657-b06e-f3d66416429d)
+
 
 
 ## 系统概述
